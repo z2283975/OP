@@ -14,7 +14,7 @@ env:
   CLASH_KERNEL: arm64
   CACHE_TOOLCHAIN: true
   UPLOAD_BIN_DIR: false
-  OPENWRT_RELEASE: true
+  UPLOAD_RELEASE: true
   TZ: Asia/Shanghai
 
 jobs:
@@ -31,7 +31,7 @@ jobs:
 
     env:
       DIY_SCRIPT: diy-${{ matrix.version }}.sh
-      OPENWRT_TAG: ARMv8_${{ matrix.version }}
+      RELEASE_TAG: ARMv8_${{ matrix.version }}
 
     steps:
     - name: Check Server Performance
@@ -167,11 +167,7 @@ jobs:
 
     - name: Check Space Usage
       if: (!cancelled())
-      run: |
-        df -hT
-        echo "================配置信息================"
-        cd $OPENWRT_PATH/bin/targets/*/*
-        cat config.buildinfo
+      run: df -hT
 
     - name: Upload Bin Directory
       if: steps.compile.outputs.status == 'success' && env.UPLOAD_BIN_DIR == 'true'
@@ -179,6 +175,17 @@ jobs:
       with:
         name: ${{ env.SOURCE_REPO }}-bin-${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}-${{ env.FILE_DATE }}
         path: ${{ env.OPENWRT_PATH }}/bin
+
+    - name: Organize Files
+      if: steps.compile.outputs.status == 'success'
+      run: |
+        cd $OPENWRT_PATH/bin/targets/*/*
+        cat config.buildinfo
+        cp $OPENWRT_PATH/.config build.config
+        mv -f $OPENWRT_PATH/bin/packages/*/*/*.ipk packages
+        tar -zcf packages.tar.gz packages
+        rm -rf packages feeds.buildinfo version.buildinfo sha256sums *.manifest *.bin
+        echo "FIRMWARE_PATH=$PWD" >> $GITHUB_ENV
 
     - name: Package OpenWrt Firmware
       if: steps.compile.outputs.status == 'success'
@@ -192,21 +199,21 @@ jobs:
         DISTRIB_REVISION: R${{ env.DATE1 }}
 
     - name: Upload OpenWrt To Artifact
-      if: env.PACKAGED_STATUS == 'success' && env.OPENWRT_RELEASE != 'true'
+      if: env.PACKAGED_STATUS == 'success' && env.UPLOAD_RELEASE != 'true'
       uses: kittaakos/upload-artifact-as-is@master
       with:
         path: ${{ env.PACKAGED_OUTPUTPATH }}
 
     - name: Upload OpenWrt To Release
-      if: env.PACKAGED_STATUS == 'success' && env.OPENWRT_RELEASE == 'true'
+      if: env.PACKAGED_STATUS == 'success' && env.UPLOAD_RELEASE == 'true'
       uses: ncipollo/release-action@main
       with:
-        name: R${{ env.DATE }} for ${{ env.OPENWRT_TAG }}
+        name: R${{ env.DATE }} for ${{ env.RELEASE_TAG }}
         allowUpdates: true
         removeArtifacts: true
-        tag: ${{ env.OPENWRT_TAG }}
+        tag: ${{ env.RELEASE_TAG }}
         token: ${{ secrets.GITHUB_TOKEN }}
-        artifacts: ${{ env.PACKAGED_OUTPUTPATH }}/*
+        artifacts: ${{ env.FIRMWARE_PATH }}/*,${{ env.PACKAGED_OUTPUTPATH }}/*
         body: |
           **This is OpenWrt Firmware for Armvirt 64**
           ### 📒 固件信息
