@@ -83,11 +83,6 @@ git_sparse_clone main https://github.com/linkease/istore luci
 git_sparse_clone master https://github.com/brvphoenix/luci-app-wrtbwmon luci-app-wrtbwmon
 git_sparse_clone master https://github.com/brvphoenix/wrtbwmon wrtbwmon
 
-# 修改版本为编译日期
-date_version=$(date +"%y.%m.%d")
-orig_version=$(cat "package/lean/default-settings/files/zzz-default-settings" | grep DISTRIB_REVISION= | awk -F "'" '{print $2}')
-sed -i "s/$orig_version/R$date_version/g" package/lean/default-settings/files/zzz-default-settings
-
 # x86 型号只显示 CPU 型号
 sed -i 's/${g}.*/${a}${b}${c}${d}${e}${f}${hydrid}/g' package/lean/autocore/files/x86/autocore
 sed -i "s/'C'/'Core '/g; s/'T '/'Thread '/g" package/lean/autocore/files/x86/autocore
