@@ -31,7 +31,7 @@ jobs:
 
     env:
       DIY_SCRIPT: diy-${{ matrix.branch }}.sh
-      RELEASE_TAG: ARMv8_${{ matrix.branch }}
+      RELEASE_TAG: ARMv8-${{ matrix.branch }}
 
     steps:
     - name: Check Server Performance
@@ -207,7 +207,7 @@ jobs:
       if: env.PACKAGED_STATUS == 'success' && env.UPLOAD_RELEASE == 'true'
       uses: ncipollo/release-action@main
       with:
-        name: R${{ env.DATE }} for ${{ env.RELEASE_TAG }}
+        name: ${{ env.DATE }} for ${{ env.RELEASE_TAG }}
         allowUpdates: true
         removeArtifacts: true
         tag: ${{ env.RELEASE_TAG }}

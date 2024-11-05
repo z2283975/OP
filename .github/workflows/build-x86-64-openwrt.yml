@@ -10,7 +10,7 @@ on:
 env:
   REPO_URL: https://github.com/coolsnowwolf/lede
   REPO_BRANCH: master
-  CONFIG_FILE: configs/x86_64.config
+  CONFIG_FILE: configs/x86-64.config
   CLASH_KERNEL: amd64
   CACHE_TOOLCHAIN: true
   UPLOAD_BIN_DIR: false
@@ -31,7 +31,7 @@ jobs:
 
     env:
       DIY_SCRIPT: diy-${{ matrix.branch }}.sh
-      RELEASE_TAG: X86_64_${{ matrix.branch }}
+      RELEASE_TAG: X86-64-${{ matrix.branch }}
 
     steps:
     - name: Check Server Performance
@@ -198,7 +198,7 @@ jobs:
       if: steps.compile.conclusion == 'success' && env.UPLOAD_RELEASE == 'true'
       uses: ncipollo/release-action@main
       with:
-        name: R${{ env.DATE }} for ${{ env.RELEASE_TAG }}
+        name: ${{ env.DATE }} for ${{ env.RELEASE_TAG }}
         allowUpdates: true
         tag: ${{ env.RELEASE_TAG }}
         token: ${{ secrets.GITHUB_TOKEN }}
